@@ -1,0 +1,13 @@
+# Node
+node_modules
+package-lock.json
+
+# api doc
+public/apidoc
+
+# IDE
+.vscode
+.idea/
+
+# boiler plate setting file
+env.json
