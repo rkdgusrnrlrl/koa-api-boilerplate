@@ -1,35 +1,39 @@
-const knex = require('../libraries/knex');
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 const Strings = require('../libraries/string');
+const autoIncrement = require('mongoose-auto-increment')
 
-let TABLE_NAME = 'users';
 
-exports.create = (email, rawPassword, name) => {
-    const password = Strings.generatePasswordHash(rawPassword)
-    return knex(TABLE_NAME)
-        .insert({email, password, name})
+var UserSchema = new mongoose.Schema({
+    id:  Number,
+    email: String,
+    passwor: String,
+    name: String,
+});
+
+let User;
+
+exports.init = (connection) => {
+    User = connection.model('user', UserSchema)
+    UserSchema.plugin(autoIncrement.plugin, { model: 'User', field: 'id' })
 }
 
 
-exports.findOne = where => knex(TABLE_NAME)
-  .select("*")
-  .where(where)
-  .first();
+exports.create = (email, rawPassword, name) => {
+    const password = Strings.generatePasswordHash(rawPassword)
+    return User.create({
+        email: email,
+        passwor: password,
+        name: name,
+    })
+}
 
-exports.getList = () => knex(TABLE_NAME).select('*');
 
-exports.count = () => knex(TABLE_NAME).count().first();
+exports.findOne = (where={}) => User.findOne(where, {"_id": 0, "__v": 0}).lean().exec()
 
-exports.init = () => knex.schema.createTable(TABLE_NAME, (table) => {
-    table.increments('id')
-    table.string('email')
-    table.string('password')
-    table.string('name')
-/*
-//check table made
-}).then(result => {
-    return knex.raw('SELECT name FROM sqlite_master WHERE type=\'table\'')
-*/
-}).then(result => {
-    if (result) console.log(result)
-    console.log("init done")
-})
+exports.getList = (where={}) => User.find(where, {"_id": 0, "__v": 0}).lean().exec()
+
+exports.count = (where={}) => User.count(where, {"_id": 0, "__v": 0}).exec()
+
+
+
